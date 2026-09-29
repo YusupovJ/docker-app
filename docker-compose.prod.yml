@@ -1,0 +1,17 @@
+services:
+  postgres:
+    restart: unless-stopped
+  api:
+    build:
+      target: prod
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+  frontend:
+    build:
+      target: prod
+      args:
+        VITE_API_URL: ${VITE_API_URL}
+    ports:
+      - "80:80"
+    restart: unless-stopped

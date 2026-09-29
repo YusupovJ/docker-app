@@ -1,0 +1,45 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+    container_name: postgres
+    volumes:
+      - "postgres_data:/var/lib/postgresql"
+    env_file:
+      - .env
+    networks:
+      - docker-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+  api:
+    build:
+      context: ./api
+    container_name: api
+    env_file:
+      - .env
+    ports:
+      - "7777:7777"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - docker-net
+  frontend:
+    build:
+      context: ./frontend
+    container_name: frontend
+    env_file:
+      - .env
+    networks:
+      - docker-net
+    depends_on:
+      - api
+
+networks:
+  docker-net:
+    driver: "bridge"
+
+volumes:
+  postgres_data:
